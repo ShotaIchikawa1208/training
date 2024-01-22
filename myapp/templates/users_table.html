@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h1>ユーザー一覧</h1>
+<table border="1" style="border-collapse: collapse">
+    <tr>
+        <th>ユーザーID</th>
+        <th>名前</th>
+        <th>性別</th>
+        <th>資格</th>
+    </tr>
+    {% for user in users %}
+    <tr>
+        <td>{{ user['user_id'] }}</td>
+        <td>{{ user['name'] }}</td>
+        <td>{{ user['gender'] }}</td>
+        {% set user_shikaku=','.join(users_shikaku_list[users.index(user)])%}
+        <td>{{ user_shikaku }}</td>
+        <td>
+            <p><a href="/user/{{ user['user_id'] }}">詳細</a></p>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<p><a href="/">ログイン</a></p>
+{% endblock %}
