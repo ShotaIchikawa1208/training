@@ -1,20 +1,22 @@
 import psycopg
 from psycopg.rows import dict_row
 
+db_setting = "dbname=study user=study password=study host=localhost port= 5432"
+
+
 class DBconnect():
 
     # アカウント登録(usersテーブルへ)
-    def account_register(self,new_user, new_user_info, user_sikaku_list):
+    def account_register(self, new_user, new_user_info, user_sikaku_list):
         print('アカウント登録スタート')
         
-        with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+        with psycopg.connect(db_setting) as conn:
 
             # 次のid番号取得
             with conn.cursor() as cur:
                 cur.execute("SELECT nextval('user_id_seq') as user_id")
                 user_id_seq = cur.fetchone() 
                 
-
             with conn.cursor() as cur:
                 self.user_id = user_id_seq[0]
                 self.name = new_user['name']
@@ -25,14 +27,12 @@ class DBconnect():
                     INTO users (user_id,name, mail, password, status) 
                     VALUES (%s,%s, %s, %s, %s)
                     """
-                
-               
+        
                 cur.execute(
                     sql,
-                    [self.user_id,self.name,self.email,self.password,0]
+                    [self.user_id, self.name, self.email, self.password, 0]
                 )
-
-                
+ 
                 print('users表へのアカウント登録完了')
 
                 # user_infoへの補足情報登録
@@ -71,7 +71,7 @@ class DBconnect():
     # アカウント登録(user_infoテーブルへ)
     def user_info_register(self, user_id, user_info):
         print('user_info表への登録開始')
-        with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+        with psycopg.connect(db_setting) as conn:
             
             with conn.cursor(row_factory=dict_row) as cur:
                 
@@ -108,7 +108,7 @@ class DBconnect():
 
     # アカウント登録(user_shikakuテーブルへ)
     def user_shikaku_register(self, user_id, user_shikaku_list):
-        with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+        with psycopg.connect(db_setting) as conn:
             with conn.cursor(row_factory=dict_row) as cur:
 
                 sql = """
@@ -119,12 +119,11 @@ class DBconnect():
                 
                 for shikaku_code in user_shikaku_list:
                     # print(shikaku_code)
-                    cur.execute(sql,[user_id, shikaku_code])
-
-                
-    # ログイン判定
+                    cur.execute(sql, [user_id, shikaku_code])
+               
+# ログイン判定
     def login_check(self, email, password):
-        with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+        with psycopg.connect(db_setting) as conn:
             with conn.cursor(row_factory=dict_row) as cur:
                 sql = """
                     SELECT
@@ -144,13 +143,12 @@ class DBconnect():
                     id = user_id['user_id']
                     
                     return id
-                
-            
-    # アカウント更新
-    
-    def update_user(self, user_id, new_user_info,  new_user_subinfo, user_shikaku_list):
+                        
+# アカウント更新
+    def update_user(self, user_id, new_user_info,  new_user_subinfo, 
+                    user_shikaku_list):
         print('アカウント更新開始')
-        with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+        with psycopg.connect(db_setting) as conn:
             with conn.cursor() as cur:
                 sql = """
                     UPDATE users 
@@ -163,7 +161,8 @@ class DBconnect():
                     """
                 
                 user_id = str(user_id)
-                cur.execute(sql,[new_user_info['name'], new_user_info['mail'], new_user_info['password'], user_id])
+                cur.execute(sql, [new_user_info['name'], new_user_info['mail'],
+                                  new_user_info['password'], user_id])
                 print('usersへの更新完了')
 
                 sql = """
@@ -182,14 +181,14 @@ class DBconnect():
                     """
                 cur.execute(sql, 
                             [
-                                new_user_subinfo['name_kana']
-                                ,new_user_subinfo['gender']
-                                ,new_user_subinfo['yubin']
-                                ,new_user_subinfo['ken_code']
-                                ,new_user_subinfo['shiku']
-                                ,new_user_subinfo['jyusyo']
-                                ,new_user_subinfo['tel']
-                                ,user_id
+                                new_user_subinfo['name_kana'],
+                                new_user_subinfo['gender'],
+                                new_user_subinfo['yubin'],
+                                new_user_subinfo['ken_code'],
+                                new_user_subinfo['shiku'],
+                                new_user_subinfo['jyusyo'],
+                                new_user_subinfo['tel'],
+                                user_id
                             ])
                 print('user_infoへの更新完了')
 
@@ -207,7 +206,6 @@ class DBconnect():
                 cur.execute(sql, [user_id])
                 recode = cur.fetchone()[0]
                 
-
                 if recode >= 1:
                     sql = """
                         DELETE 
@@ -217,7 +215,7 @@ class DBconnect():
                             user_id = %s
                     """
 
-                cur.execute(sql,[user_id])
+                cur.execute(sql, [user_id])
 
                 # 更新資格の登録
                 sql = """
@@ -228,16 +226,16 @@ class DBconnect():
                 
                 for shikaku_code in user_shikaku_list:
                     # print(shikaku_code)
-                    cur.execute(sql,[user_id, shikaku_code])
+                    cur.execute(sql, [user_id, shikaku_code])
 
                 conn.commit()
                 message = 'アカウント更新完了'
                 return message  
                 
     # アカウント削除
-    def delete_user(self,id):
+    def delete_user(self, id):
         print('アカウント削除開始')
-        with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+        with psycopg.connect(db_setting) as conn:
             with conn.cursor() as cur:
                 # users表のデータ削除
                 sql = """
@@ -248,7 +246,7 @@ class DBconnect():
                         user_id = %s
                     """
                 id = str(id)
-                cur.execute(sql,[id])
+                cur.execute(sql, [id])
 
                 # user_info表のデータ削除
                 sql = """
@@ -258,7 +256,7 @@ class DBconnect():
                     WHERE
                         user_id = %s
                     """
-                cur.execute(sql,[id])
+                cur.execute(sql, [id])
 
                 # user_shikaku表のデータ削除
                 sql = """
@@ -273,8 +271,7 @@ class DBconnect():
                 # 指定のidがshikaku表にあるか判定
                 cur.execute(sql, [id])
                 recode = cur.fetchone()[0]
-                
-
+                              
                 if recode >= 1:
                     sql = """
                         DELETE 
@@ -284,7 +281,7 @@ class DBconnect():
                             user_id = %s
                     """
 
-                cur.execute(sql,[id])
+                cur.execute(sql, [id])
 
                 conn.commit()
                 message = 'アカウント削除完了'
@@ -293,7 +290,7 @@ class DBconnect():
     # ユーザー一覧取得
     def get_users(self):
         print('users取得開始')
-        with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+        with psycopg.connect(db_setting) as conn:
             with conn.cursor(row_factory=dict_row) as cur:
                 sql = """
                     SELECT
@@ -315,7 +312,7 @@ class DBconnect():
                     user, user_shikakus = self.search_user(id)
 
 
-                    # user_shikakusはタプルの入ったリストになるので、それを一つのリストにする
+# user_shikakusはタプルの入ったリストになるので、それを一つのリストにする
                     tmp = []
                     for shikaku_tapl in user_shikakus:
                         for shikaku in shikaku_tapl:
@@ -325,13 +322,12 @@ class DBconnect():
                     # users_shikaku_list.append(user_shikakus)
                     users_shikaku_list.append(tmp)
 
-                
                 print('users取得完了')
                 return users_info_list, users_shikaku_list
             
     # ユーザー一人の基本情報取得
-    def search_user(self,id):
-        with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+    def search_user(self, id):
+        with psycopg.connect(db_setting) as conn:
             with conn.cursor(row_factory=dict_row) as cur:
                 print('user_info取得開始')
                 # user_id,名前,性別を取得するSQL
@@ -349,7 +345,7 @@ class DBconnect():
                     """
                 
                 id = str(id)
-                cur.execute(get_info_sql,[id])
+                cur.execute(get_info_sql, [id])
                 user = cur.fetchone()
 
                 # gender_code変換
@@ -357,17 +353,13 @@ class DBconnect():
                     user['gender'] = '男性'
                 else:
                     user['gender'] = '女性'
-
-                    
+  
                 user_shikaku_list = self.get_user_shiksku(id)
-
-                
-                
-                return user,user_shikaku_list
+                return user, user_shikaku_list
 
     # ユーザー一人の資格情報取得
     def get_user_shiksku(self, id):
-        with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+        with psycopg.connect(db_setting) as conn:
             with conn.cursor() as cur:
                 # userの資格を取得するSQL
                 print('user_shikaku取得開始')
@@ -389,7 +381,7 @@ class DBconnect():
                                     shikaku_code
 
                                """
-                cur.execute(get_shikaku_sql,[id])
+                cur.execute(get_shikaku_sql, [id])
                 user_shikaku_list = cur.fetchall()
 
                 return user_shikaku_list

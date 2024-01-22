@@ -1,5 +1,6 @@
 import psycopg
 
+
 # 登録可能なメールアドレスかチェックする
 def check_mail(mail):
     with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
@@ -22,9 +23,10 @@ def check_mail(mail):
                 return True
             else:
                 return False
-            
+
+
 def search_address(yubin):
-     with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+    with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
         with conn.cursor() as cur:
 
             sql = """
@@ -37,7 +39,6 @@ def search_address(yubin):
 
                 """
             
-        
             yubin = str(yubin)
             print(yubin)
             cur.execute(sql, [yubin])
@@ -59,6 +60,7 @@ def search_address(yubin):
                                'mati': result[6]}
                 return result_dict
 
+
 def search_ken_code(ken):
     sql = """
         SELECT
@@ -74,6 +76,7 @@ def search_ken_code(ken):
             ken_code = cur.fetchone()
 
             return ken_code
+
 
 if __name__ == '__main__':
     search_address(9300261)

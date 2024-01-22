@@ -3,24 +3,27 @@
 {% if message %}
 <p>{{ message }}</p>
 {% endif %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class=" align-items-center justify-content-center">
+                <h1>{{ name }} さんのユーザーページ</h1>
+                <p>ユーザーID : {{ user['user_id']}}</p>
+                <p>名前: {{ user['name'] }}</p>
+                <p>性別 : {{ user['gender'] }}</p>
 
-<h1>{{ name }} さんのユーザーページ</h1>
-<p>ユーザーID : {{ user['user_id']}}</p>
-<p>名前: {{ user['name'] }}</p>
-<p>性別 : {{ user['gender'] }}</p>
-
-<h2>取得資格一覧</h2>
-<ul>
-    {% for shikaku in user_shikaku_list %}
-    <li>{{ shikaku[0] }}</li>
-    {% endfor %}
-</ul>
+                <h2>取得資格一覧</h2>
+                <ul>
+                    {% for shikaku in user_shikaku_list %}
+                    <li>{{ shikaku[0] }}</li>
+                    {% endfor %}
+                </ul>
 
 
-<a href="/delete/{{ user['user_id'] }}"><button>アカウント削除</button></a>
-<a href="/update"><button>アカウント編集</button></a>
+                <a href="/delete/{{ user['user_id'] }}"><button class="btn btn-danger">アカウント削除</button></a>
+                <a href="/update"><button class="btn btn-info">アカウント編集</button></a>
 
-<!-- <h2>アカウント情報変更</h2>
+                <!-- <h2>アカウント情報変更</h2>
 <form action=" /update/{{ user['user_id'] }}" method="POST">
 
     <label for="name">
@@ -35,5 +38,10 @@
 
     <input type="submit" value="情報変更">
 </form> -->
-<p><a href="/">ログイン</a></p>
+                <p><a href="/">ログイン</a></p>
+                <p><a href="/users_table">ユーザー一覧</a></p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

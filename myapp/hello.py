@@ -1,7 +1,7 @@
 
 
-from flask import Flask, request, render_template, jsonify
-from flask import session, redirect,url_for
+from flask import Flask, request, render_template
+from flask import session, redirect, url_for
 from datetime import timedelta 
 import json
 import validation 
@@ -14,11 +14,13 @@ app.secret_key = 'abcdefghijklmn'
 # ３分操作がなければsession破棄するよう設定
 app.permanent_session_lifetime = timedelta(minutes=3) 
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/login',methods=['POST'])
+
+@app.route('/login', methods=['POST'])
 def login():
     email = request.form['e-mail']
     password = request.form['password']
@@ -41,24 +43,29 @@ def login():
 def form():
     return render_template('account_register.html')
 
+
 # ユーザー一覧
 @app.route('/users_table')
 def show_users_table():
     db = db_connect.DBconnect()
     users_info_list, users_shikaku_list = db.get_users()
     
-    return render_template('users_table.html',users = users_info_list, users_shikaku_list  = users_shikaku_list)
+    return render_template('users_table.html', users=users_info_list, 
+                           users_shikaku_list=users_shikaku_list)
 
-#　ユーザーページ
+
+# ユーザーページ
 @app.route('/user/<int:id>')
 def user_page(id):
     print('user_page関数内')
     print(type(id))
     db = db_connect.DBconnect()
-    user,user_shikaku_list = db.search_user(id)
+    user, user_shikaku_list = db.search_user(id)
     
     name = session['user_name']
-    return render_template('user_page.html', user = user, user_shikaku_list = user_shikaku_list, name = name)
+    return render_template('user_page.html', user=user, 
+                           user_shikaku_list=user_shikaku_list, name=name)
+
 
 # アカウント登録
 @app.route('/new', methods=['POST'])
@@ -72,23 +79,22 @@ def account_register():
 
     # user_infoに登録するデータ
     new_user_info = {
-        "name_kana" : request.form['name_kana'],
+        "name_kana": request.form['name_kana'],
         "gender": request.form['gender'],
         "yubin": request.form['yubin'],
         "ken_code": request.form['ken_code'],
         "shiku": request.form['shiku'],
-        "jyusyo": request.form['jyusyo'],
+        "jyusyo": request.form['jyushyo'],
         "tel": request.form['tel'],
     }
 
     # user_sikakuに登録するデータ
-    user_sikaku_list  = request.form.getlist('sikaku')
+    user_sikaku_list = request.form.getlist('sikaku')
     
     db = db_connect.DBconnect()
     message = db.account_register(new_user, new_user_info, user_sikaku_list)
+    return render_template('index.html', message=message)
 
-
-    return render_template('index.html', message = message)
 
 # メールアドレスに重複がないか確認（非同期）
 @app.route('/mail_check', methods=['POST'])
@@ -99,14 +105,19 @@ def mail_check():
     print(type(judg))
     print(judg)
     if judg != True:
+        print('NO')
         return 'NO'
     else:
         return 'OK'
-    
+
+
 # 入力郵便番号から住所取得
 @app.route('/search_address', methods={'POST'})
 def search_address():
-    yubin = request.form.get('yubin')
+    # yubin = request.form.get('yubin')
+
+    data = request.json
+    yubin = data['yubin']
 
     result_dict = validation.search_address(yubin)
 
@@ -114,6 +125,7 @@ def search_address():
     result_json = json.dumps(result_dict, ensure_ascii=False, indent=2)
     # print('json' + result_json)
     return result_json
+
 
 # アカウント更新
 @app.route('/update')
@@ -123,10 +135,11 @@ def go_edit():
         user_id = session['user_id']
         print(type(user_id))
         user_name = session['user_name']
-        return render_template('edit_user_info.html', user_id = user_id, user_name = user_name)
+        return render_template('edit_user_info.html', user_id=user_id, user_name=user_name)
     else:
         message = 'ログインしなおしてください'
-        return render_template('index.html',message = message)
+        return render_template('index.html', message=message)
+
 
 @app.route('/update/<int:user_id>', methods=['POST'])
 def account_update(user_id):
@@ -139,34 +152,37 @@ def account_update(user_id):
 
     # user_infoに登録するデータ
     new_user_subinfo = {
-        "name_kana" : request.form['name_kana'],
+        "name_kana": request.form['name_kana'],
         "gender": request.form['gender'],
         "yubin": request.form['yubin'],
         "ken_code": request.form['ken_code'],
         "shiku": request.form['shiku'],
-        "jyusyo": request.form['jyusyo'],
+        "jyusyo": request.form['jyushyo'],
         "tel": request.form['tel'],
     }
 
     # user_sikakuに登録するデータ
-    user_sikaku_list  = request.form.getlist('sikaku')
+    user_sikaku_list = request.form.getlist('sikaku')
 
-     # メールアドレスの重複がないか判定
-    judg = validation.check_mail(new_user_info['mail'])
-    print(type(judg))
-    print(judg)
-    if judg != True:
-        message = 'メールアドレスが重複しています'
-        user_id = session['user_id']
-        user_name = session['user_name']
-        return render_template('edit_user_info.html', message = message, user_id = user_id, user_name = user_name)
+    # メールアドレスの重複がないか判定
+    # judg = validation.check_mail(new_user_info['mail'])
+    # print(type(judg))
+    # print(judg)
+    # if judg != True:
+    #     message = 'メールアドレスが重複しています'
+    #     user_id = session['user_id']
+    #     user_name = session['user_name']
+    #     return render_template('edit_user_info.html', message=message, 
+    #                            user_id=user_id, user_name=user_name)
     
     db = db_connect.DBconnect()
-    message = db.update_user(user_id, new_user_info,  new_user_subinfo, user_sikaku_list)
+    message = db.update_user(user_id, new_user_info, 
+                             new_user_subinfo, user_sikaku_list)
     # return先を考えるredirectでuser_page()に飛ばす
     id = session['user_id']
     
-    return redirect(url_for('user_page', id = id))
+    return redirect(url_for('user_page', id=id, message=message))
+
 
 # アカウント削除
 @app.route('/delete/<int:id>')
@@ -176,4 +192,4 @@ def account_delete(id):
 
     print('削除成功')
     
-    return render_template('index.html', message = message)
+    return render_template('index.html', message=message)

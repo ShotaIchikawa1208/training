@@ -29,4 +29,5 @@ def insert_from_csv():
             f.write(sql + '\n')
         
 
-insert_from_csv()
+if __name__ == '__main__':
+    insert_from_csv()
