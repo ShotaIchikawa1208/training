@@ -1,6 +1,8 @@
 import psycopg
 from psycopg.rows import dict_row
 
+import make_hash
+
 db_setting = "dbname=study user=study password=study host=localhost port= 5432"
 
 
@@ -22,6 +24,7 @@ class DBconnect():
                 self.name = new_user['name']
                 self.email = new_user['mail']
                 self.password = new_user['password']
+                self.hashed_password = make_hash.hash_password(self.password)
                 sql = """
                     INSERT 
                     INTO users (user_id,name, mail, password, status) 
@@ -30,7 +33,8 @@ class DBconnect():
         
                 cur.execute(
                     sql,
-                    [self.user_id, self.name, self.email, self.password, 0]
+                    [self.user_id, self.name, self.email, 
+                     self.hashed_password, 0]
                 )
  
                 print('users表へのアカウント登録完了')
@@ -49,7 +53,7 @@ class DBconnect():
             
     # # 登録可能なメールアドレスかチェックする
     # def check_mail(salf,mail):
-    #     with psycopg.connect("dbname=study user=study password=study host=localhost port= 5432") as conn:
+    #     with psycopg.connect(db_setting) as conn:
     #         with conn.cursor() as cur:
 
     #             sql = """
@@ -127,23 +131,30 @@ class DBconnect():
             with conn.cursor(row_factory=dict_row) as cur:
                 sql = """
                     SELECT
-                        user_id
+                        user_id,
+                        password
                     FROM
                         users
                     WHERE
                         mail = %s
-                        AND password = %s
                     """
-                cur.execute(sql, [email, password])
-                user_id = cur.fetchone() 
+                cur.execute(sql, [email])
+                user = cur.fetchone() 
                 
-                if user_id == None:
-                    return False
+                print('===========')
+                print(password)
+                print(user['password'])
+                print('===========')
+                if user['user_id']:
+                    check_password = make_hash.verify_password(password,
+                                                               user['password'])
+                    if check_password:
+                        return user['user_id']
+                    else:
+                        return False
                 else:
-                    id = user_id['user_id']
-                    
-                    return id
-                        
+                    return False
+                                                          
 # アカウント更新
     def update_user(self, user_id, new_user_info,  new_user_subinfo, 
                     user_shikaku_list):
@@ -379,7 +390,6 @@ class DBconnect():
                                     ) 
                                 ORDER BY
                                     shikaku_code
-
                                """
                 cur.execute(get_shikaku_sql, [id])
                 user_shikaku_list = cur.fetchall()

@@ -25,7 +25,7 @@ def login():
     email = request.form['e-mail']
     password = request.form['password']
     db = db_connect.DBconnect()
-    user_id= db.login_check(email, password)
+    user_id = db.login_check(email, password)
     
     if user_id:
         message = 'ログイン成功'
@@ -33,10 +33,12 @@ def login():
         session['user_id'] = user['user_id']
         session['user_name'] = user['name']
         name = session['user_name']
-        return render_template('user_page.html', user = user, user_shikaku_list = user_shikaku_list, message = message,name = name)
+        return render_template('user_page.html', user=user, 
+                               user_shikaku_list=user_shikaku_list, 
+                               message=message, name=name)
     else:
         message = 'ログイン失敗'
-        return render_template('index.html', message = message)
+        return render_template('index.html', message=message)
     
 
 @app.route('/account_register')
@@ -135,7 +137,8 @@ def go_edit():
         user_id = session['user_id']
         print(type(user_id))
         user_name = session['user_name']
-        return render_template('edit_user_info.html', user_id=user_id, user_name=user_name)
+        return render_template('edit_user_info.html', user_id=user_id, 
+                               user_name=user_name)
     else:
         message = 'ログインしなおしてください'
         return render_template('index.html', message=message)
