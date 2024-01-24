@@ -1,16 +1,16 @@
-from cryptography.fernet import MultiFernet
+# from cryptography.fernet import MultiFernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
-import os
-import base64
+# import os
+# import base64
 
 # salt = os.urandom(16)
 salt = b'aaaaa'
 
 
 def hash_password(password):
-    
+
     print('登録時の', salt)
     binary_password = password.encode('utf-8')
 
@@ -38,7 +38,7 @@ def verify_password(password, hashed_password):
     print('確認時の', salt)
     print(password)
     print(hashed_password)
-    
+
     # key = bytes(kdf.derive(binary_password))
     # print('key', key)
     # print(hashed_password)
@@ -54,7 +54,7 @@ def verify_password(password, hashed_password):
     hashed_password = bytes.fromhex(hashed_password[2:])
     print(binary_password)
     print(hashed_password, type(hashed_password))
-    
+
     try:
         kdf.verify(binary_password, hashed_password)
         print('passwordが一致しました')

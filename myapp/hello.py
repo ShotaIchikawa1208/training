@@ -1,10 +1,8 @@
-
-
 from flask import Flask, request, render_template
 from flask import session, redirect, url_for
-from datetime import timedelta 
+from datetime import timedelta
 import json
-import validation 
+import validation
 import db_connect
 
 app = Flask(__name__)
@@ -12,7 +10,7 @@ app = Flask(__name__)
 # sessionに格納する情報のため必ず必要
 app.secret_key = 'abcdefghijklmn'
 # ３分操作がなければsession破棄するよう設定
-app.permanent_session_lifetime = timedelta(minutes=3) 
+app.permanent_session_lifetime = timedelta(minutes=3)
 
 
 @app.route('/')
@@ -26,20 +24,20 @@ def login():
     password = request.form['password']
     db = db_connect.DBconnect()
     user_id = db.login_check(email, password)
-    
+
     if user_id:
         message = 'ログイン成功'
         user, user_shikaku_list = db.search_user(user_id)
         session['user_id'] = user['user_id']
         session['user_name'] = user['name']
         name = session['user_name']
-        return render_template('user_page.html', user=user, 
-                               user_shikaku_list=user_shikaku_list, 
+        return render_template('user_page.html', user=user,
+                               user_shikaku_list=user_shikaku_list,
                                message=message, name=name)
     else:
         message = 'ログイン失敗'
         return render_template('index.html', message=message)
-    
+
 
 @app.route('/account_register')
 def form():
@@ -51,8 +49,8 @@ def form():
 def show_users_table():
     db = db_connect.DBconnect()
     users_info_list, users_shikaku_list = db.get_users()
-    
-    return render_template('users_table.html', users=users_info_list, 
+
+    return render_template('users_table.html', users=users_info_list,
                            users_shikaku_list=users_shikaku_list)
 
 
@@ -63,9 +61,9 @@ def user_page(id):
     print(type(id))
     db = db_connect.DBconnect()
     user, user_shikaku_list = db.search_user(id)
-    
+
     name = session['user_name']
-    return render_template('user_page.html', user=user, 
+    return render_template('user_page.html', user=user,
                            user_shikaku_list=user_shikaku_list, name=name)
 
 
@@ -92,7 +90,7 @@ def account_register():
 
     # user_sikakuに登録するデータ
     user_sikaku_list = request.form.getlist('sikaku')
-    
+
     db = db_connect.DBconnect()
     message = db.account_register(new_user, new_user_info, user_sikaku_list)
     return render_template('index.html', message=message)
@@ -106,7 +104,7 @@ def mail_check():
     judg = validation.check_mail(mail)
     print(type(judg))
     print(judg)
-    if judg != True:
+    if not judg:
         print('NO')
         return 'NO'
     else:
@@ -137,7 +135,7 @@ def go_edit():
         user_id = session['user_id']
         print(type(user_id))
         user_name = session['user_name']
-        return render_template('edit_user_info.html', user_id=user_id, 
+        return render_template('edit_user_info.html', user_id=user_id,
                                user_name=user_name)
     else:
         message = 'ログインしなおしてください'
@@ -175,15 +173,15 @@ def account_update(user_id):
     #     message = 'メールアドレスが重複しています'
     #     user_id = session['user_id']
     #     user_name = session['user_name']
-    #     return render_template('edit_user_info.html', message=message, 
+    #     return render_template('edit_user_info.html', message=message,
     #                            user_id=user_id, user_name=user_name)
-    
+
     db = db_connect.DBconnect()
-    message = db.update_user(user_id, new_user_info, 
+    message = db.update_user(user_id, new_user_info,
                              new_user_subinfo, user_sikaku_list)
     # return先を考えるredirectでuser_page()に飛ばす
     id = session['user_id']
-    
+
     return redirect(url_for('user_page', id=id, message=message))
 
 
@@ -194,5 +192,5 @@ def account_delete(id):
     message = db.delete_user(id)
 
     print('削除成功')
-    
+
     return render_template('index.html', message=message)
